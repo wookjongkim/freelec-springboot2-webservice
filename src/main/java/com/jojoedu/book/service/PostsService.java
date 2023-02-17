@@ -2,13 +2,18 @@ package com.jojoedu.book.service;
 
 import com.jojoedu.book.domain.posts.Posts;
 import com.jojoedu.book.domain.posts.PostsRepository;
+import com.jojoedu.book.web.dto.PostsListResponseDto;
 import com.jojoedu.book.web.dto.PostsResponseDto;
 import com.jojoedu.book.web.dto.PostsSaveRequestDto;
 import com.jojoedu.book.web.dto.PostsUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
+
+
 
 @RequiredArgsConstructor
 @Service
@@ -36,5 +41,20 @@ public class PostsService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다, id = " + id));
 
         return new PostsResponseDto(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostsListResponseDto> findAllDesc(){
+        return postsRepository.findAllDesc().stream()
+                .map(PostsListResponseDto::new) // .map(posts -> new PostsListResponseDto(posts)) 와 동일
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void delete(Long id){
+        Posts posts = postsRepository.findById(id).orElseThrow(()
+        -> new IllegalArgumentException("해당 게시글이 없습니다. id=" + id));
+
+        postsRepository.delete(posts); // 기본으로 제공하는 delete 메서드 사용, 조회 후 그대로 삭제
     }
 }
